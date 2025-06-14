@@ -21,6 +21,11 @@ const treatmentSchema = new mongoose.Schema({
 
 const patientSchema = new mongoose.Schema(
   {
+    admin_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Dental_User",
+      required: true,
+    },
     name: {
       type: String,
       required: true,

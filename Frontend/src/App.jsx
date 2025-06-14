@@ -1,5 +1,5 @@
 "use client";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
 import Login from "./components/Auth/Login.jsx";
@@ -9,20 +9,24 @@ import Patients from "./components/Patients/Patients.jsx";
 import Appointments from "./components/Appointments/Appointments.jsx";
 import { Toaster } from "react-hot-toast";
 import "./App.css";
+import { useEffect } from "react";
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  const { user } = useAuth();
   return user ? children : <Navigate to="/login" />;
 }
 
 function PublicRoute({ children }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  const { user } = useAuth();
   return user ? <Navigate to="/" /> : children;
 }
 
+
+
 function App() {
+  const { Navigate } = useNavigate();
+  
+
   return (
     <AuthProvider>
       <div className="App">

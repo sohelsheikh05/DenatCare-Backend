@@ -1,4 +1,5 @@
 import express from "express"
+import authenticateUser from "../middleware/Authenticat.js"
 import  { body, validationResult } from "express-validator"
 import auth from "../middleware/auth.js"
 import {getAll,
@@ -12,14 +13,14 @@ import { get } from "mongoose"
 const router = express.Router()
 
 // Get all patients
-router.get("/", auth,getAll )
+router.get("/", auth,authenticateUser,getAll )
 
 // Get patient by ID
-router.get("/:id", auth, getById)
+router.get("/:id", auth,authenticateUser,getById)
 
 // Create new patient
 router.post(
-  "/",
+  "/",authenticateUser,
   [
     auth,
     body("name").notEmpty().withMessage("Name is required"),
@@ -32,13 +33,13 @@ router.post(
 )
 
 // Update patient
-router.put("/:id", auth, UpdatePatient)
-router.post("/:id/treatments", auth, AddTreatment)
+router.put("/:id", auth, authenticateUser,UpdatePatient)
+router.post("/:id/treatments", auth, authenticateUser,AddTreatment)
 
 // Mark patient as completed
-router.patch("/:id/complete", auth, MarkPatientAsCompleted)
+router.patch("/:id/complete", auth, authenticateUser,MarkPatientAsCompleted)
 
 // Delete patient
-router.delete("/:id", auth,DeletePatient)
+router.delete("/:id", auth,authenticateUser,DeletePatient)
 
 export default router
