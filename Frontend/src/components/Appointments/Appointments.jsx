@@ -60,18 +60,9 @@ const Appointments = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Schedule Management</h1>
-              <p className="text-gray-600 mt-1">Manage your appointments and availability</p>
+              <p className="text-gray-600 mt-1">Manage your appointments </p>
             </div>
-            <div className="flex items-center gap-4">
-              <select className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="main-office">Main Office</option>
-                <option value="branch-office">Branch Office</option>
-                <option value="downtown">Downtown Clinic</option>
-              </select>
-              <button className="p-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50">
-                <Settings className="h-4 w-4" />
-              </button>
-            </div>
+           
           </div>
         </div>
 
@@ -206,10 +197,7 @@ const Appointments = () => {
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments scheduled</h3>
                         <p className="text-gray-600 mb-4">Get started by scheduling your first appointment.</p>
-                        {/* <button className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 mx-auto">
-                          <PlusCircle className="h-4 w-4 mr-2" />
-                          Schedule Appointment
-                        </button> */}
+                        
                       </div>
                     )}
                   </div>
