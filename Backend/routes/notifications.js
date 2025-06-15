@@ -21,7 +21,7 @@ router.post("/send-reminder", auth, async (req, res) => {
     },
   });
     const { patientName, phone, email, appointmentTime, appointmentType, date } = req.body;
-  console.log(patientName, phone, email, appointmentTime, appointmentType)
+  
     
 const mailOptions = {
     from: process.env.EMAIL,

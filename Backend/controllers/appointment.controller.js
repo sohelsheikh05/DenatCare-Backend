@@ -90,7 +90,7 @@ date2.setMinutes(date2.getMinutes() - 30);
 const startTime = date2.toTimeString().slice(0, 5); // Lower limit (time - 30 min)
 
 // Fetch all appointments on that date
-const appointmentsOnSameDate = await Appointment.find({ date: date });
+const appointmentsOnSameDate = await Appointment.find({ date: date , admin_id: req.user._id});
 
 // Check for conflict
 const conflict = appointmentsOnSameDate.find((appointment) => {
