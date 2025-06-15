@@ -10,6 +10,13 @@ import reminderroutes from "./routes/notifications.js";
 import documentRoutes from "./routes/documents.js";
 dotenv.config();
 const app=express();
+// Add this AFTER your other routes
+app.use(express.static(path.join(__dirname, 'https://denat-care-backend.vercel.app/')));
+
+// Serve index.html for all unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'https://denat-care-backend.vercel.app/', 'index.html'));
+});
 
 app.use(cors(
     {
