@@ -24,7 +24,7 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center px-4 mr-20">
         <div className="flex items-center gap-2 font-bold">
           <div className="h-6 w-6 bg-emerald-500 rounded flex items-center justify-center">
-            <span className="text-white text-sm">🦷</span>
+            <span className="text-white text-sm">DT</span>
           </div>
           <span className="hidden md:inline-block">DentiTrack</span>
         </div>
