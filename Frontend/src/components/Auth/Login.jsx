@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { useAuth } from "../../contexts/AuthContext.jsx"
+import { useAuth } from "../../contexts/AuthContext"
+
 import toast from "react-hot-toast"
 
-const Login = () => {
+const UnifiedLogin = () => {
+  const [loginType, setLoginType] = useState("doctor") // "doctor" or "patient"
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,15 +26,22 @@ const Login = () => {
     e.preventDefault()
     setLoading(true)
 
-    const result = await login(formData.email, formData.password)
-
-    if (result.success) {
-      toast.success("Login successful!")
-    } else {
-      toast.error(result.message)
+    try {
+     
+        // Doctor login using existing auth context
+        const result = await login(formData.email, formData.password)
+        if (result.success) {
+          toast.success("Doctor login successful!")
+        } else {
+          toast.error(result.message)
+        }
+       
+    } catch (error) {
+      console.error("Login error:", error)
+      toast.error(error.response?.data?.message || "Login failed")
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -49,6 +58,21 @@ const Login = () => {
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
         </div>
+
+        {/* Login Type Selection */}
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setLoginType("doctor")}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              loginType === "doctor" ? "bg-white text-emerald-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Doctor Login
+          </button>
+          
+        </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -91,22 +115,26 @@ const Login = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Signing in..." : `Sign in as ${loginType === "doctor" ? "Doctor" : "Patient"}`}
             </button>
           </div>
 
-          <div className="text-center">
-            <span className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/register" className="font-medium text-emerald-600 hover:text-emerald-500">
-                Sign up
-              </Link>
-            </span>
-          </div>
+          {loginType === "doctor" && (
+            <div className="text-center">
+              <span className="text-sm text-gray-600">
+                Don't have an account?{" "}
+                <Link to="/register" className="font-medium text-emerald-600 hover:text-emerald-500">
+                  Sign up
+                </Link>
+              </span>
+            </div>
+          )}
+
+          
         </form>
       </div>
     </div>
   )
 }
 
-export default Login
+export default UnifiedLogin

@@ -1,14 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, CheckCircle, FileText, PlusCircle, Search } from "lucide-react"
+import { Calendar, CheckCircle, FileText, PlusCircle, Search, Upload } from "lucide-react"
 import { format } from "date-fns"
 import axios from "axios"
 import toast from "react-hot-toast"
-import Header from "../Layout/Header.jsx"
-import AddPatientModal from "./AddPatientModal.jsx"
-import TreatmentRecordModal from "./TreatmentRecordModal.jsx"
-import ScheduleAppointmentModal from "./ScheduleAppointmentModal.jsx"
+import Header from "../Layout/Header"
+import AddPatientModal from "./AddPatientModal"
+import TreatmentRecordModal from "./TreatmentRecordModal"
+import ScheduleAppointmentModal from "./ScheduleAppointmentModal"
+import DocumentsModal from "./DocumentsModal"
+
 
 const Patients = () => {
   const [patients, setPatients] = useState([])
@@ -19,6 +21,8 @@ const Patients = () => {
   const [selectedPatient, setSelectedPatient] = useState(null)
   const [treatmentRecordOpen, setTreatmentRecordOpen] = useState(false)
   const [scheduleAppointmentOpen, setScheduleAppointmentOpen] = useState(false)
+  const [documentsModalOpen, setDocumentsModalOpen] = useState(false)
+  
 
   useEffect(() => {
     fetchPatients()
@@ -84,7 +88,7 @@ const Patients = () => {
 
   const handleScheduleAppointment = async (patientId, appointmentData) => {
     try {
-      await axios.post(import.meta.env.VITE_BACKEND_URL + "/appointments", {
+     await axios.post(import.meta.env.VITE_BACKEND_URL + "/appointments", {
         patient: patientId,
         date: appointmentData.date,
         time: appointmentData.time,
@@ -94,8 +98,13 @@ const Patients = () => {
       fetchPatients()
       toast.success("Appointment scheduled successfully")
     } catch (error) {
-      console.error("Error scheduling appointment:", error)
-      toast.error("Failed to schedule appointment")
+      console.error("Error scheduling appointment:", error.message)
+      if(error.status===400)
+      toast.error("Appointment should be for future" )
+     else if(error.status===410)
+      toast.error( "Alreay an appointment is scheduled within half hr range" )
+      else 
+        toast.error("Error in Creating Appointment")
     }
   }
 
@@ -159,7 +168,7 @@ const Patients = () => {
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
-                Completed Patients ({completedPatients.length})
+                Treatement Completed Patients ({completedPatients.length})
               </button>
             </nav>
           </div>
@@ -181,6 +190,11 @@ const Patients = () => {
                         setSelectedPatient(patient)
                         setScheduleAppointmentOpen(true)
                       }}
+                      onViewDocuments={(patient) => {
+                        setSelectedPatient(patient)
+                        setDocumentsModalOpen(true)
+                      }}
+                     
                     />
                   ))
                 ) : (
@@ -207,6 +221,11 @@ const Patients = () => {
                         setSelectedPatient(patient)
                         setScheduleAppointmentOpen(true)
                       }}
+                      onViewDocuments={(patient) => {
+                        setSelectedPatient(patient)
+                        setDocumentsModalOpen(true)
+                      }}
+                      
                     />
                   ))
                 ) : (
@@ -234,11 +253,27 @@ const Patients = () => {
         patient={selectedPatient}
         onScheduleAppointment={handleScheduleAppointment}
       />
+      <DocumentsModal
+        open={documentsModalOpen}
+        onClose={() => setDocumentsModalOpen(false)}
+        patient={selectedPatient}
+      />
+      
     </div>
   )
 }
 
-const PatientCard = ({ patient, isCompleted, onMarkCompleted, onViewTreatments, onScheduleAppointment }) => {
+const PatientCard = ({
+  patient,
+  isCompleted,
+  onMarkCompleted,
+  onViewTreatments,
+  onScheduleAppointment,
+  onViewDocuments,
+  
+}) => {
+  const [showActions, setShowActions] = useState(false)
+
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex items-center space-x-4">
@@ -253,6 +288,7 @@ const PatientCard = ({ patient, isCompleted, onMarkCompleted, onViewTreatments, 
       </div>
 
       <div className="hidden md:block">
+        
         <p className="text-sm font-medium">Last Visit</p>
         <p className="text-sm text-gray-500">{format(new Date(patient.lastVisit), "PPP")}</p>
       </div>
@@ -268,29 +304,65 @@ const PatientCard = ({ patient, isCompleted, onMarkCompleted, onViewTreatments, 
         )}
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="relative">
         <button
-          onClick={() => onViewTreatments(patient)}
-          className="flex items-center px-3 py-1 text-sm border rounded-md hover:bg-gray-50"
+          onClick={() => setShowActions(!showActions)}
+          className="px-4 py-2 text-sm border rounded-md hover:bg-gray-50"
         >
-          <FileText className="mr-1 h-4 w-4" />
-          Treatments
+          Actions
         </button>
-        <button
-          onClick={() => onScheduleAppointment(patient)}
-          className="flex items-center px-3 py-1 text-sm border rounded-md hover:bg-gray-50"
-        >
-          <Calendar className="mr-1 h-4 w-4" />
-          Schedule
-        </button>
-        {!isCompleted && (
-          <button
-            onClick={() => onMarkCompleted(patient._id)}
-            className="flex items-center px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-          >
-            <CheckCircle className="mr-1 h-4 w-4" />
-            Complete
-          </button>
+
+        {showActions && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-10">
+            <button
+              onClick={() => {
+                onViewTreatments(patient)
+                setShowActions(false)
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              View Treatments
+            </button>
+            <button
+              onClick={() => {
+                onScheduleAppointment(patient)
+                setShowActions(false)
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Schedule Appointment
+            </button>
+            <button
+              onClick={() => {
+                onViewDocuments(patient)
+                setShowActions(false)
+              }}
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Manage Documents
+            </button>
+            
+              
+           
+            {!isCompleted && (
+              <>
+                <hr className="my-1" />
+                <button
+                  onClick={() => {
+                    onMarkCompleted(patient._id)
+                    setShowActions(false)
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-green-700 hover:bg-gray-100"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Mark Treatement as Completed
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>

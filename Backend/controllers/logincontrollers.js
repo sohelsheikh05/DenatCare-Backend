@@ -90,13 +90,14 @@ export const register = async (req, res) => {
 }
 
 export const getUser = async (req, res) => {
-  async (req, res) => {
+  
   try {
+   
     const user = await Dental_User.findById(req.userId).select("-password")
     res.json(user)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error" })
   }
-}
+
 }

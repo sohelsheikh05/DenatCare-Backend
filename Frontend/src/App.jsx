@@ -11,17 +11,28 @@ import { Toaster } from "react-hot-toast";
 import "./App.css";
 import { useEffect } from "react";
 
+import Landing from "./Landing/Landing.jsx"
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
+  
   return user ? children : <Navigate to="/login" />;
 }
 
 function PublicRoute({ children }) {
   const { user } = useAuth();
-  return user ? <Navigate to="/" /> : children;
+  return user ? <Navigate to="/home" /> : children;
 }
 
+function PatientRoute({ children }) {
+  const userType = localStorage.getItem("userType")
+  const patientToken = localStorage.getItem("patientToken")
 
+  if (userType === "patient" && patientToken) {
+    return children
+  }
+
+  return <Navigate to="/login" />
+}
 
 function App() {
   const { Navigate } = useNavigate();
@@ -31,6 +42,14 @@ function App() {
     <AuthProvider>
       <div className="App">
         <Routes>
+           <Route
+            path="/"
+            element={
+              
+                <Landing />
+              
+            }
+          />
           <Route
             path="/login"
             element={
@@ -48,7 +67,7 @@ function App() {
             }
           />
           <Route
-            path="/"
+            path="/home"
             element={
               <ProtectedRoute>
                 <Dashboard />
@@ -71,7 +90,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
+       
+         
+          </Routes>
         <Toaster position="top-right" />
       </div>
     </AuthProvider>

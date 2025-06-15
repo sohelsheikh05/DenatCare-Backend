@@ -196,8 +196,7 @@ const Appointments = () => {
                           <CalendarIcon className="h-8 w-8 text-gray-400" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments scheduled</h3>
-                        <p className="text-gray-600 mb-4">Get started by scheduling your first appointment.</p>
-                        
+                       
                       </div>
                     )}
                   </div>

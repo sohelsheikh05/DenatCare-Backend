@@ -2,11 +2,11 @@ import Appointment from "../model/Appointment.js";
 import { validationResult } from "express-validator";
 import Patient from "../model/patient.model.js";
 
-// Get all appointments (filtered by admin)
+
 const getAll = async (req, res) => {
   try {
     const { date, status } = req.query;
-    const query = { admin_id: req.user._id }; // 👈 Only for this admin
+    const query = { admin_id: req.user._id }; 
 
     if (date) {
       const startDate = new Date(date);
@@ -31,7 +31,7 @@ const getAll = async (req, res) => {
   }
 };
 
-// Get today's appointments for the admin
+
 const getTodayAppointments = async (req, res) => {
   try {
     const today = new Date();
@@ -52,22 +52,57 @@ const getTodayAppointments = async (req, res) => {
   }
 };
 
-// Create a new appointment under the current admin
+
 const newAppointment = async (req, res) => {
   try {
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    const {date, time} = req.body
+       const appointmentDate = new Date(date);
+    const appointmentTimeParts = time.split(":");
+    appointmentDate.setHours(parseInt(appointmentTimeParts[0]), parseInt(appointmentTimeParts[1]), 0, 0);
 
+    const now = new Date();
+
+    if (appointmentDate < now) {
+      return res.status(400).json({ message: "Appointment must be scheduled for a future date and time." });
+    }
     const patient = await Patient.findOne({
       _id: req.body.patient,
-      admin_id: req.user._id, // 👈 Ensure patient belongs to this admin
+      admin_id: req.user._id, 
     });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found or not yours" });
     }
+
+    
+
+    const date1 = new Date(`1970-01-01T${time}:00`);
+date1.setMinutes(date1.getMinutes() + 30);
+const endTime = date1.toTimeString().slice(0, 5);  // Upper limit (time + 30 min)
+
+const date2 = new Date(`1970-01-01T${time}:00`);
+date2.setMinutes(date2.getMinutes() - 30);
+const startTime = date2.toTimeString().slice(0, 5); // Lower limit (time - 30 min)
+
+// Fetch all appointments on that date
+const appointmentsOnSameDate = await Appointment.find({ date: date });
+
+// Check for conflict
+const conflict = appointmentsOnSameDate.find((appointment) => {
+  const existingTime = appointment.time; // Assuming format "HH:mm"
+  return existingTime >= startTime && existingTime <= endTime;
+});
+
+if (conflict) {
+  return res.status(410).json({ message: "Conflict: An appointment exists within 30 minutes of this time." });
+}
+
+
 
     const appointment = new Appointment({
       ...req.body,
@@ -80,6 +115,7 @@ const newAppointment = async (req, res) => {
 
     // Update patient's next appointment
     patient.nextAppointment = req.body.date;
+    patient.status==="Completed"?patient.status="Active":patient.status
     await patient.save();
 
     const populatedAppointment = await Appointment.findById(appointment._id)

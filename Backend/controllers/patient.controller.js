@@ -4,6 +4,7 @@ import { validationResult } from "express-validator";
 // Get all patients for logged-in user, with optional filters
 const getAll = async (req, res) => {
   try {
+  
     const { status, search } = req.query;
     const query = { admin_id: req.user._id }; // Filter by logged-in user
 
@@ -14,8 +15,7 @@ const getAll = async (req, res) => {
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { phone: { $regex: search, $options: "i" } },
+      
       ];
     }
 

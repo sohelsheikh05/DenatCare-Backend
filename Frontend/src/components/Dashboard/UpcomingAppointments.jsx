@@ -21,6 +21,7 @@ const UpcomingAppointments = () => {
       const response = await axios.get(import.meta.env.VITE_BACKEND_URL + "/appointments/today")
       
        const filtered = response.data.filter(app => app.status !== "Cancelled")
+       filtered.sort((a, b) => a.time - b.time);
     setAppointments(filtered)
     } catch (error) {
       console.error("Error fetching appointments:", error)
@@ -75,6 +76,7 @@ const UpcomingAppointments = () => {
   return (
     <div className="space-y-2">
       {appointments.map((appointment, index) => (
+        
         <div
           key={appointment._id}
           className="flex items-center justify-between rounded-lg border p-3 text-sm relative"
@@ -102,7 +104,7 @@ const UpcomingAppointments = () => {
           <div className="flex items-center relative">
             <span
               className={`mr-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                appointment.status === "Checked In"
+                appointment.status === "Checked In" 
                   ? "bg-green-100 text-green-800"
                   : appointment.status === "Completed"
                   ? "bg-blue-100 text-blue-800"
@@ -124,32 +126,28 @@ const UpcomingAppointments = () => {
 
               {activeDropdown === index && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-10">
-                  <button
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowModal(true)}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    View Patient Profile
-                  </button>
+                  
+                  {appointment.status === "Checked In" && (
+                    <button
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() =>
+                        handleStatusUpdate(appointment._id, "Completed")
+                      }
+                    >
+                     Mark Schedule Complete
+                    </button>
+                  )}
 
                   {appointment.status !== "Checked In" &&
                     appointment.status !== "Completed" && (
                       <>
-                        <button
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => {
-                            // Call patient logic here
-                          }}
-                        >
-                          <Phone className="mr-2 h-4 w-4" />
-                          Call Patient
-                        </button>
+                        
                         <button
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => handleSendReminder(appointment)}
                         >
                           <Send className="mr-2 h-4 w-4" />
-                          Send Reminder
+                          Send Reminder SMS
                         </button>
                         <hr className="my-1" />
                         <button
@@ -177,9 +175,7 @@ const UpcomingAppointments = () => {
         </div>
       ))}
 
-      <button className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-        View all today's appointments
-      </button>
+      
     </div>
   )
 }

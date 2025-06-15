@@ -28,41 +28,58 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const fetchUser = async () => {
-    try {
-      const response = await axios.get(import.meta.env.VITE_BACKEND_URL + "/auth/me")
-      setUser(response.data)
-    } catch (e) {
-      localStorage.removeItem("token")
-      delete axios.defaults.headers.common["Authorization"]
-    } finally {
-      setLoading(false)
-    }
+  try {
+   
+    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/me`,{
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    
+   
+    setUser(response.data);
+    
+  } catch (e) {
+    console.error("Error fetching user:", e);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
+    setUser(null);
+  } finally {
+    setLoading(false);
   }
+};
+
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post(import.meta.env.VITE_BACKEND_URL + "/auth/login", { email, password })
-      const { token, user } = response.data
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/login`, {
+        email,
+        password
+      })
 
+      const { token, user } = response.data
       localStorage.setItem("token", token)
+     
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
       setUser(user)
-  
+
       return { success: true }
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error.response?.data?.message || "Login failed"
       }
     }
   }
 
   const register = async (userData) => {
     try {
-      const response = await axios.post(import.meta.env.VITE_BACKEND_URL + "/auth/register", userData)
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/register`, userData)
       const { token, user } = response.data
 
       localStorage.setItem("token", token)
+      localStorage.setItem("user", JSON.stringify(user))
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
       setUser(user)
 
@@ -70,13 +87,14 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Registration failed",
+        message: error.response?.data?.message || "Registration failed"
       }
     }
   }
 
   const logout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("user")
     delete axios.defaults.headers.common["Authorization"]
     setUser(null)
   }
@@ -87,7 +105,12 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     loading,
+    setUser
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? <div>Loading...</div> : children}
+    </AuthContext.Provider>
+  )
 }
